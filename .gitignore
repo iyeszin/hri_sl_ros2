@@ -1,0 +1,6 @@
+/build/
+/install/
+/log/
+/src/rh8d_ros2/collector_data/
+/.idea/
+/testing_wo_ros2/

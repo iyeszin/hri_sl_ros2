@@ -1,0 +1,6 @@
+# Request message
+string request_data
+---
+# Response message
+bool success
+string response_data

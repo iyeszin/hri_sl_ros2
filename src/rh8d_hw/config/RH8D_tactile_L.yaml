@@ -1,0 +1,18 @@
+/**:
+    ros__parameters:
+        light_mode: false
+        hand_polarity: "L_"
+        baudrate: 1000000
+        hand_port: "/dev/ttyUSB0"
+        sensor_port: "/dev/ttyUSB1"
+        frequency: 50
+        main_board: 40
+        w_rotation: 41
+        w_adduction: 42
+        w_flexion: 43
+        th_adduction: 44
+        th_flexion: 45
+        ix_flexion: 46
+        middle_flexion: 47
+        ring_ltl_flexion: 48
+        number_sensors: 5

@@ -1,0 +1,9 @@
+# Request
+string request_data
+---
+# Result
+bool is_succeed
+string result_data
+---
+# Feedback
+string feedback_data

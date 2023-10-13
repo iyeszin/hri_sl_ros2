@@ -73,6 +73,13 @@ List the key features of your project, such as:
 - Integration with ROS 2 robotics applications
 - Position joints for hand with GUI
 
+## Training the Classifier
+
+If you're interested in understanding how the sign language classifier was trained or want to contribute to the training process, please refer to our dedicated training repository. It contains detailed documentation, code, and data related to classifier training.
+
+**Training Repository**: [Link to Classifier Training Repository](https://github.com/iyeszin/SignLanguageRecognition)
+
+
 ## Ros architecture
     ![ROS architecture](https://github.com/iyeszin/rh8d_ros2/blob/master/ros_arch.png)
 

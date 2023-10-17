@@ -81,10 +81,10 @@ If you're interested in understanding how the sign language classifier was train
 
 
 ## Ros architecture
-    ![ROS architecture](https://github.com/iyeszin/rh8d_ros2/blob/master/ros_arch.png)
+    ![ROS architecture](https://github.com/iyeszin/hri_sl_ros2/blob/main/ros_arch.png)
 
 ## The pipeline
-    ![ROS architecture](https://github.com/iyeszin/rh8d_ros2/blob/master/pipeline.gif)
+    ![ROS architecture](https://github.com/iyeszin/hri_sl_ros2/blob/main/pipeline.gif)
 
 Some results:
 [Video results](

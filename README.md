@@ -11,12 +11,15 @@ Sign language recognition is essential for enhancing communication with the deaf
 Before you can use this package, ensure you have the following prerequisites installed and configured:
 
 1. **ROS 2 Installation**:
-   - Make sure you have ROS 2 installed. Visit the [ROS 2 website](https://index.ros.org/doc/ros2/Installation) for installation instructions.
+   - Make sure you have ROS 2 installed. Visit the [ROS 2 website](https://docs.ros.org/en/humble/Installation.html) for installation instructions.
+   - Check out also [Using colcon to build packages](https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html).
 
 2. **Python Dependencies**:
    - Install the required Python libraries:
      - `pip install serial`
      - `pip install pyserial`
+     - `sudo apt install dbus-x11`
+     - `pip install pandas`
 
 3. **USB Port Latency Timer**:
    - To ensure smooth operation, change the latency timer of the USB port. Run the following command in the terminal:
@@ -26,6 +29,18 @@ Before you can use this package, ensure you have the following prerequisites ins
      ```
      
      Set the value in this file to `1`.
+
+4. **Add yourself into the 'dialout' group**:
+    - First check if you are a member of that group:
+    ```console
+    groups ${USER}
+    ```
+
+    - If you don't belong to the dialout grup then add yourself to it:
+    ```console
+    sudo usermod -a -G dialout ${USER}
+    ```
+
 
 ## Usage
 
@@ -43,6 +58,12 @@ Before you can use this package, ensure you have the following prerequisites ins
     ```shell
     ./launch_all.sh
     ```
+
+    To run script, first give execute permission:
+    ```shell
+    chmod +x /path/to/yourscript.sh
+    ```
+
 
     d. Recognition Start:
     Stand in front of the camera, ensuring that your sign language gestures are visible.

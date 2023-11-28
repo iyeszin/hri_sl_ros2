@@ -97,7 +97,7 @@ class RH8DHWNode(Node):
                 ('light_mode', False),
                 ('hand_polarity', 'L_'),
                 ('baudrate', 1000000),
-                ('port', "/dev/ttyUSB1"),
+                ('port', "/dev/ttyUSB0"),
                 ('frequency', 50),
                 ('main_board', rclpy.Parameter.Type.INTEGER),
                 ('w_rotation', rclpy.Parameter.Type.INTEGER),
@@ -191,15 +191,15 @@ class RH8DHWNode(Node):
                         self.middle_flexion_mapping,
                         self.ring_ltl_flexion_mapping]
 
-        self.id_dict = {'main_board': self.main_board_mapping,
-                        'w_rotation': self.w_rotation_mapping,
-                        'w_adduction': self.w_adduction_mapping,
-                        'w_flexion': self.w_flexion_mapping,
-                        'th_adduction': self.th_adduction_mapping,
-                        'th_flexion': self.th_flexion_mapping,
-                        'ix_flexion': self.ix_flexion_mapping,
-                        'middle_flexion': self.middle_flexion_mapping,
-                        'ring_ltl_flexion': self.ring_ltl_flexion_mapping}
+        self.id_dict = {self.polarity.lower() + 'main_board': self.main_board_mapping,
+                        self.polarity.lower() + 'w_rotation': self.w_rotation_mapping,
+                        self.polarity.lower() + 'w_adduction': self.w_adduction_mapping,
+                        self.polarity.lower() + 'w_flexion': self.w_flexion_mapping,
+                        self.polarity.lower() + 'th_adduction': self.th_adduction_mapping,
+                        self.polarity.lower() + 'th_flexion': self.th_flexion_mapping,
+                        self.polarity.lower() + 'ix_flexion': self.ix_flexion_mapping,
+                        self.polarity.lower() + 'middle_flexion': self.middle_flexion_mapping,
+                        self.polarity.lower() + 'ring_ltl_flexion': self.ring_ltl_flexion_mapping}
 
         # reading IDs and model number
         self.dxl_read_ID_list = []

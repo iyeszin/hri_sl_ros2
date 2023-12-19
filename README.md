@@ -19,7 +19,14 @@ Before you can use this package, ensure you have the following prerequisites ins
      - `pip install serial`
      - `pip install pyserial`
      - `sudo apt install dbus-x11`
+     <!-- Needed for run launch_gui.sh -->
      - `pip install pandas`
+     <!-- Needed for run launch_all.sh -->
+     - `pip install tensorflow`
+     - `pip install keras`
+     - `pip install mediapipe`
+     
+     
 
 3. **USB Port Latency Timer**:
    - To ensure smooth operation, change the latency timer of the USB port. Run the following command in the terminal:

@@ -75,7 +75,7 @@ ADDR_START_SYNC_READ_MAIN_BOARD = 94
 LEN_SYNC_READ_MAIN_BOARD        = 8
 
 # Protocol version
-PROTOCOL_VERSION                = 2.0  # See which protocol version is used in the Dynamixel
+PROTOCOL_VERSION                = 1.0  # See which protocol version is used in the Dynamixel
 
 # Dynamixel Constants
 TORQUE_ENABLE               = 1                 # Value for enabling the torque

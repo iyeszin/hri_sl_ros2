@@ -49,7 +49,7 @@ class WebcamPublisher(Node):
 
         self.bridge = CvBridge()
 
-        self.path = "/home/iyeszin/Documents/rh8d_ros2-master/src/ros_sign_language_recognition/ros_sign_language_recognition/weight/cnn_model.h5"
+        self.path = "/home/iyeszin/Documents/hri_sl_ros2/src/ros_sign_language_recognition/ros_sign_language_recognition/weight/cnn_model.h5"
 
         self.cvFpsCalc = CvFpsCalc(buffer_len=10)
         
@@ -63,10 +63,11 @@ class WebcamPublisher(Node):
         self.result = ""
 
     def timer_callback(self):
-        msg = String()
-        msg.data = self.result
-        # msg.data = "test in leoben"
-        self.publisher_.publish(msg)
+        if self.result is not None and self.result != "":
+            msg = String()
+            msg.data = self.result
+            self.publisher_.publish(msg)
+
 
     def load_model(self):
         # Model load
@@ -303,41 +304,13 @@ class MyClient:
             if self.response_received:
                 break
 
-            # Sleep for some time before sending the next request
-            time.sleep(1)
+            # # Sleep for some time before sending the next request
+            # time.sleep(1)
 
         self.response_received = False  # Reset the flag to receive new requests
 
     def destroy(self):
         self.node.destroy_node()
-
-
-# def main(args=None):
-#     rclpy.init(args=args)
-
-#     # Create and start the webcam publisher thread
-#     webcam_publisher = WebcamPublisher()
-#     webcam_thread = threading.Thread(target=webcam_publisher.capture_frames)
-#     webcam_thread.start()
-
-#     # Create the client node
-#     my_client = MyClient()
-
-#     while True:
-#         # Get the result from the WebcamPublisher
-#         result = str(webcam_publisher.result)
-#         print(f"Received result: {result}")
-
-#         # Send request
-#         my_client.send_request(result)
-
-#     # Cleanup
-#     webcam_publisher.destroy_node()
-#     webcam_thread.join()
-#     my_client.destroy()
-
-#     rclpy.shutdown()
-
 
 def main(args=None):
     rclpy.init(args=args)
@@ -347,16 +320,24 @@ def main(args=None):
     webcam_thread = threading.Thread(target=webcam_publisher.capture_frames)
     webcam_thread.start()
 
-    while True:
-        # call the publisher
-        webcam_publisher.timer_callback()
+    try:
+        while rclpy.ok():  # Use rclpy.ok() to check if the ROS context is still alive
+            # call the publisher
+            webcam_publisher.timer_callback()
 
-    # Cleanup
-    webcam_publisher.destroy_node()
-    webcam_thread.join()
-    my_client.destroy()
+            # Add a sleep to avoid a busy-wait loop
+            time.sleep(0.1)  # Adjust the sleep duration as needed
 
-    rclpy.shutdown()
+    except KeyboardInterrupt:
+        pass  # Allow the program to be interrupted with Ctrl+C
+
+    finally:
+        # Cleanup
+        webcam_publisher.destroy_node()
+        webcam_thread.join()
+        MyClient.destroy()
+        rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

@@ -328,7 +328,8 @@ class RH8DHWNode(Node):
             # Get Dynamixel model number and store them in a list
             dxl_model_number, dxl_comm_result, dxl_error = self.packetHandler.ping(self.portHandler, id_)
             # time.sleep(0.0)
-            # self.get_logger().info("Ping # %03d: COMM_SUCCESS: %s, ERROR: %d" % (id_, self.packetHandler.getTxRxResult(dxl_comm_result), dxl_error))
+            self.get_logger().info("Ping # %03d: COMM_SUCCESS: %s, ERROR: %d" % (id_, self.packetHandler.getTxRxResult(dxl_comm_result), dxl_error))
+            self.get_logger().info("Dynamixel model number: %d" % dxl_model_number)
             if dxl_comm_result == COMM_SUCCESS and dxl_error == 0:
                 self.get_logger().info("[ID: %03d] ping succeeded! Dynamixel model number: %d" % (id_, dxl_model_number))
                 if dxl_model_number != 405:

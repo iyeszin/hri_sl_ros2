@@ -33,7 +33,7 @@ class RH8DCollectorNode(Node):
         self.joint_dict_list = []
 
         # path to data repo
-        self.csv_path = "/Documents/rh8d_ros2-master/src/rh8d_ros2/collector_data"
+        self.csv_path = "/Documents/hri_sl_ros2/src/rh8d_ros2/collector_data"
 
         self.callback_group = MutuallyExclusiveCallbackGroup()
 

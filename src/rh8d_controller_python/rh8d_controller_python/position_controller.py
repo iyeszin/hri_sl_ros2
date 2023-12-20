@@ -113,7 +113,7 @@ class RH8DSampleController(Node):
 
         print(sign)
 
-        self.target_position_list = self.read_csv_data("/home/iyeszin/Documents/rh8d_ros2-master/position_trajectories.csv", sign)
+        self.target_position_list = self.read_csv_data("/home/iyeszin/Documents/hri_sl_ros2/position_trajectories.csv", sign)
         # instead of taking hard code trajectories, read the file with pre-recorded trajectories
 
         for name, position, speed, joint in zip(self.joint_names, self.target_position_list, self.target_speed_list, self.lone_joints):

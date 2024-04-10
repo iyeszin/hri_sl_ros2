@@ -118,6 +118,16 @@ Some results:
 [Video results](
 https://drive.google.com/drive/folders/1DWM2FxcwTKW34imyiGcpeCjsdzMU6Fxu?usp=sharing)
 
+## Extra
+If you mind so much on the deprecated warning, you can do the following:
+1. set the PYTHONWARNINGS environment variable in your ~/.bashrc file
+```bash
+   export PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources"
+```
+2. update every setup.cfg
+from script-dir=... to script_dir=...
+from install-scripts=... to install_scripts=...
+
 ## Contributing
 We welcome contributions from the community! If you'd like to contribute to this project, please follow our contribution guidelines.
 

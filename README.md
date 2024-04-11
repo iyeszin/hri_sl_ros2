@@ -133,7 +133,7 @@ from install-scripts=... to install_scripts=...
 [NumPy 1.20.0 Release Notes](https://numpy.org/devdocs/release/1.20.0-notes.html)
 
 ```bash
-    conda create -n robotics python=3.10.6 
+    conda create -n robotics python=3.9.19
     pip install -r requirements.txt
 ```
 

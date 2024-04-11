@@ -128,6 +128,16 @@ If you mind so much on the deprecated warning, you can do the following:
 from script-dir=... to script_dir=...
 from install-scripts=... to install_scripts=...
 
+## Changes of dytype in numpy starting from version 1.20.0
+[Cannot import mediapipe - TypeError: 'numpy._DTypeMeta' object is not subscriptable](https://stackoverflow.com/questions/76918044/cannot-import-mediapipe-typeerror-numpy-dtypemeta-object-is-not-subscripta).
+[NumPy 1.20.0 Release Notes](https://numpy.org/devdocs/release/1.20.0-notes.html)
+
+```bash
+    conda create -n robotics python=3.10.6 
+    pip install -r requirements.txt
+```
+
+
 ## Contributing
 We welcome contributions from the community! If you'd like to contribute to this project, please follow our contribution guidelines.
 

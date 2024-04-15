@@ -96,13 +96,21 @@ class ROS2UI(QMainWindow):
             self.edit_done_button.setDisabled(False)
             self.timer.start(1000 // self.fps)  # Adjust the timeout value as needed
             self.csv_writer = csv.writer(open('landmarks.csv', 'w'), delimiter=',', lineterminator='\n')
-            header = []
-            header.append('frame')
-            for part in ['face', 'left_hand', 'pose', 'right_hand']:
-                for landmark in range(21 if part == 'face' else 21 if part == 'pose' else 21):
+            
+            header = ['frame']
+            for part in ['face', 'left_hand', 'right_hand', 'pose']:
+                if part == 'face':
+                    landmark_count = 478
+                elif part in ['left_hand', 'right_hand']:
+                    landmark_count = 21
+                else:  # Assuming the default is pose
+                    landmark_count = 33
+                
+                for landmark in range(landmark_count):
                     for coord in ['x', 'y', 'z']:
                         header.append(f'{coord}_{part}_{landmark}')
             self.csv_writer.writerow(header)
+
         else:
             self.start_stop_button.setText('Start Processing')
             self.edit_done_button.setDisabled(True)

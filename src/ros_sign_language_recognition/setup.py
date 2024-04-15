@@ -27,6 +27,7 @@ setup(
     entry_points={
         'console_scripts': [
             'inference_node = ros_sign_language_recognition.inference:main',
+            'ui_inf_node = ros_sign_language_recognition.ui_inf:main',
         ],
     },
 )

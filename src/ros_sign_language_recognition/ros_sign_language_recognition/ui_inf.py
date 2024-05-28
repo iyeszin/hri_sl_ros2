@@ -1,14 +1,21 @@
 '''
 This code process each frame of the live video using the MediaPipe Pose model and save the landmark of each frame in a CSV file
+Once stop the live video, it process the landmarks and put the result in the textbox
 '''
 import sys
 import cv2
+import csv
 import numpy as np
+import mediapipe as mp
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QTextEdit, QVBoxLayout, QWidget, QHBoxLayout, QLabel, QMessageBox
 from PyQt5.QtGui import QImage, QPixmap
-import mediapipe as mp
-import csv
+from std_msgs.msg import String
+from ros_sign_language_recognition.predict import main as predict
+
+import rclpy
+from rclpy.node import Node
+
 
 class VideoWidget(QWidget):
     def __init__(self, width, height):
@@ -46,6 +53,12 @@ class ROS2UI(QMainWindow):
         self.recording = False
         self.frame_count = 0
 
+        # # Initialize ROS 2 node
+        # self.node = rclpy.create_node('ui_node')
+        
+        # # Create publisher to publish gesture character
+        # self.publisher_ = self.node.create_publisher(String, 'gesture_char', 10)
+
     def init_ui(self):
         self.setWindowTitle("ROS2 UI")
         self.setGeometry(100, 100, 600, 400)
@@ -58,11 +71,16 @@ class ROS2UI(QMainWindow):
         self.edit_done_button.setDisabled(True)  # Disabled until processing starts
         self.edit_done_button.clicked.connect(self.edit_result)
 
+        self.verify_button = QPushButton('Verify', self)
+        self.verify_button.setDisabled(True)  # Disabled until processing starts
+        self.verify_button.clicked.connect(self.verify_predict)
+
         # Placeholder for live video
         self.video_widget = VideoWidget(400, 450)
 
         # Text box for result
         self.result_textbox = QTextEdit()
+        self.result_textbox.setReadOnly(True)
 
         # Layout
         layout = QVBoxLayout()
@@ -72,7 +90,7 @@ class ROS2UI(QMainWindow):
         # Horizontal layout for edit and done buttons
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.edit_done_button)
-        button_layout.addWidget(QPushButton('Verify', self))  # Placeholder for "Done" button
+        button_layout.addWidget(self.verify_button)
         layout.addLayout(button_layout)
 
         layout.addWidget(self.result_textbox)
@@ -93,19 +111,20 @@ class ROS2UI(QMainWindow):
         self.recording = not self.recording
         if self.recording:
             self.start_stop_button.setText('Stop Processing')
-            self.edit_done_button.setDisabled(False)
+            self.edit_done_button.setDisabled(True)
+            self.verify_button.setDisabled(True)
             self.timer.start(1000 // self.fps)  # Adjust the timeout value as needed
             self.csv_writer = csv.writer(open('landmarks.csv', 'w'), delimiter=',', lineterminator='\n')
-            
+
             header = ['frame']
             for part in ['face', 'left_hand', 'right_hand', 'pose']:
                 if part == 'face':
-                    landmark_count = 478
+                    landmark_count = 468
                 elif part in ['left_hand', 'right_hand']:
                     landmark_count = 21
                 else:  # Assuming the default is pose
                     landmark_count = 33
-                
+
                 for landmark in range(landmark_count):
                     for coord in ['x', 'y', 'z']:
                         header.append(f'{coord}_{part}_{landmark}')
@@ -113,13 +132,15 @@ class ROS2UI(QMainWindow):
 
         else:
             self.start_stop_button.setText('Start Processing')
-            self.edit_done_button.setDisabled(True)
+            self.edit_done_button.setDisabled(False)
+            self.verify_button.setDisabled(False)
             self.timer.stop()
             self.pose.close()
             self.hands.close()
             self.face.close()
             self.csv_writer = None
             QMessageBox.information(self, "Processing Finished", "Landmarks saved in landmarks.csv")
+            self.process_predict()  # Automatically process landmarks once recording stops
 
     def edit_result(self):
         if self.edit_done_button.text() == 'Edit':
@@ -128,11 +149,10 @@ class ROS2UI(QMainWindow):
         else:
             self.result_textbox.setReadOnly(True)
             self.edit_done_button.setText('Edit')
-            # Process inference result
+            # Save or process the edited result if necessary
             result = self.result_textbox.toPlainText()
-            # Save inference result or perform other actions as needed
+            print(f"Edited result: {result}")
 
-        
     def process_frame(self):
         ret, frame = self.cap.read()
         if ret:
@@ -145,91 +165,76 @@ class ROS2UI(QMainWindow):
 
                 if face_results.multi_face_landmarks:
                     for face_landmarks in face_results.multi_face_landmarks:
-                        # Iterate over all expected face landmarks for each face
                         for landmark in face_landmarks.landmark:
-                            # Extract landmark data
                             x = landmark.x
                             y = landmark.y
                             z = landmark.z if hasattr(landmark, 'z') else 0
-                            
-                            # Append x, y, and z coordinates to the row
                             row.append(x)
                             row.append(y)
                             row.append(z)
                 else:
-                    # If no face landmarks detected, fill the entire row with zeros
-                    row += [0] * (468 * 3)  # Assuming 468 landmarks for the face and 3 coordinates for each
-
-
+                    row += [0] * (468 * 3)
 
                 if hands_results.multi_hand_landmarks:
-                    # Initialize lists to hold left and right hand landmarks
                     left_hand_landmarks = []
                     right_hand_landmarks = []
 
-                    # Separate hand landmarks into left and right hands
                     for hand_landmarks, handedness in zip(hands_results.multi_hand_landmarks, hands_results.multi_handedness):
-                        for landmark, classification in zip(hand_landmarks.landmark, handedness.classification):
-                            # Check the handedness of the current hand landmark
-                            if classification.label == 'Left':
-                                left_hand_landmarks.append(landmark)
-                            else:
-                                right_hand_landmarks.append(landmark)
+                        if handedness.classification[0].label == 'Left':
+                            left_hand_landmarks = hand_landmarks.landmark
+                        else:
+                            right_hand_landmarks = hand_landmarks.landmark
 
-                    # Iterate over all expected hand landmarks
-                    # for landmark in left_hand_landmarks[:21]:  # Assuming you're interested in the first 21 landmarks
-                    for idx, landmark in enumerate(left_hand_landmarks):
-                        # Print out the x, y, and z coordinates
-                        print(f"Landmark {idx}: x={landmark.x}, y={landmark.y}, z={landmark.z if hasattr(landmark, 'z') else 0}")
-            
+                    for landmark in left_hand_landmarks:
                         row.append(landmark.x)
                         row.append(landmark.y)
                         row.append(landmark.z if hasattr(landmark, 'z') else 0)
 
-                    # Fill in zeros for any missing left hand landmarks
                     row += [0] * ((21 - len(left_hand_landmarks)) * 3)
 
-                    # Iterate over all expected hand landmarks
-                    for idx, landmark in enumerate(right_hand_landmarks):
-                    # for landmark in right_hand_landmarks[:21]:  # Assuming you're interested in the first 21 landmarks
+                    for landmark in right_hand_landmarks:
                         row.append(landmark.x)
                         row.append(landmark.y)
                         row.append(landmark.z if hasattr(landmark, 'z') else 0)
 
-                    # Fill in zeros for any missing right hand landmarks
                     row += [0] * ((21 - len(right_hand_landmarks)) * 3)
                 else:
-                    # If no hand landmarks detected, fill the entire row with zeros
-                    row += [0] * (21 * 3 * 2)  # Assuming 21 landmarks for each hand and 3 coordinates for each 
-
+                    row += [0] * (21 * 3 * 2)
 
                 if pose_results.pose_landmarks:
-                    # Iterate over all expected pose landmarks
-                    for idx in range(33):
-                        # Check if the current keypoint index is present in the detected landmarks
-                        if idx < len(pose_results.pose_landmarks.landmark):
-                            landmark = pose_results.pose_landmarks.landmark[idx]
-                            # Print out the x, y, and z coordinates
-                            # print(f"Landmark {idx}: x={landmark.x}, y={landmark.y}, z={landmark.z if hasattr(landmark, 'z') else 0}")
-            
-                            row.append(landmark.x)
-                            row.append(landmark.y)
-                            row.append(landmark.z if hasattr(landmark, 'z') else 0)
-                        else:
-                            # If the keypoint is missing, fill in zeros
-                            row += [0, 0, 0]
+                    for idx, landmark in enumerate(pose_results.pose_landmarks.landmark):
+                        row.append(landmark.x)
+                        row.append(landmark.y)
+                        row.append(landmark.z if hasattr(landmark, 'z') else 0)
                 else:
-                    # If no pose landmarks detected, fill the entire row with zeros
                     row += [0] * 33 * 3
 
                 self.csv_writer.writerow([self.frame_count] + row)
 
             self.frame_count += 1
-            
-            # Update video widget with the processed frame
             self.video_widget.update_frame(frame)
 
+    def process_predict(self):
+        print("Processing prediction...")
+        result = predict()  # Call the main function from predict.py and capture the return value
+        self.result_textbox.setText(result)  # Update the QTextEdit with the prediction result
+        self.result_textbox.setReadOnly(True)
+        self.verify_button.setDisabled(False)
+
+    def verify_predict(self):
+        print("Sending prediction to robot...")
+        result = self.result_textbox.toPlainText()  # Get the result from the textbox
+        print(f"Prediction result: {result}")
+        
+        # Publish the result to the 'gesture_char' topic
+        msg = String()
+        msg.data = result
+        self.publisher_.publish(msg)
+
 def main():
+    # Initialize ROS 2 node
+    # rclpy.init()
+
     app = QApplication(sys.argv)
     ui = ROS2UI()
     ui.show()

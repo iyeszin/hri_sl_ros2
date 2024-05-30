@@ -53,11 +53,11 @@ class ROS2UI(QMainWindow):
         self.recording = False
         self.frame_count = 0
 
-        # # Initialize ROS 2 node
-        # self.node = rclpy.create_node('ui_node')
+        # Initialize ROS 2 node
+        self.node = rclpy.create_node('ui_node')
         
-        # # Create publisher to publish gesture character
-        # self.publisher_ = self.node.create_publisher(String, 'gesture_char', 10)
+        # Create publisher to publish gesture character
+        self.publisher_ = self.node.create_publisher(String, 'gesture_char', 10)
 
     def init_ui(self):
         self.setWindowTitle("ROS2 UI")
@@ -233,7 +233,7 @@ class ROS2UI(QMainWindow):
 
 def main():
     # Initialize ROS 2 node
-    # rclpy.init()
+    rclpy.init()
 
     app = QApplication(sys.argv)
     ui = ROS2UI()

@@ -113,9 +113,14 @@ class RH8DSampleController(Node):
 
         print(sign)
 
-        self.target_position_list = self.read_csv_data("/home/iyeszin/Documents/hri_sl_ros2/position_trajectories.csv", sign)
-        # instead of taking hard code trajectories, read the file with pre-recorded trajectories
+        if sign.strip() == "":
+            # If the request is blank, do not change the target position
+            pass
+        else:
+            # If the request is not blank, update the target position
+            self.target_position_list = self.read_csv_data("/home/iyeszin/Documents/hri_sl_ros2/position_trajectories.csv", sign)
 
+        # Rest of your code remains unchanged
         for name, position, speed, joint in zip(self.joint_names, self.target_position_list, self.target_speed_list, self.lone_joints):
             joint.name = name
             joint.target_pos = position
@@ -123,16 +128,19 @@ class RH8DSampleController(Node):
 
         self.msg.joints = self.lone_joints
 
-        # # Perform the robot action and get the timestamp when it starts
-        # robot_action_start_timestamp = time.time()
-        # print(robot_action_start_timestamp)
-
         self.joint_pub.publish(self.msg)
 
         if self.t < 200:
             self.t += 1
         else:
             self.t = 0
+
+        # # Check if the request is blank
+        # if sign.strip() == "":
+        #     # Send completion message if the last character is processed
+        #     self.get_logger().info("Hand has finished executing all requested actions.")
+
+
 
     def initPosition(self):
         self.target_position_list = [2048, 2048, 2048, 0, 0, 0, 0, 0]

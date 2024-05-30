@@ -1,9 +1,11 @@
+'''
+This code serves both purposes: checking latency and sending characters to the robot's hand. 
+'''
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from rh8d_msgs.srv import CustomService
 import time
-import threading
 import csv
 
 class ListenerNode(Node):
@@ -17,34 +19,29 @@ class ListenerNode(Node):
         )
         self.subscription_
         self.get_logger().info('Listener node initialized')
-        self.my_client_ = MyClient()        
+        self.my_client_ = MyClient()
         self.results = []  # Initialize an empty list to store the results
 
     def callback(self, msg):
         self.get_logger().info(f'Received: {msg.data}')
         result = msg.data  # Obtain the result from the message
-        # self.my_client_.send_request(result)  # Send the request using MyClient
 
-        # modified to record latency time
-        gesture_received_time = time.time()
-        latency = self.my_client_.send_request(result, gesture_received_time)
-        if latency is not None:
-            self.get_logger().info(f'Recognized: {result}, Latency: {latency:.6f} seconds')
-            self.results.append((result, latency))
-        else:
-            self.get_logger().info(f'Recognized: {result}, Latency: None')
-
-        # self.save_results('results.csv')
-        self.my_client_.destroy()
+        # Iterate over each character in the result
+        for char in result:
+            # Send each character to the robot's hand using MyClient
+            response_time = self.my_client_.send_request(char)
+            if response_time is not None:
+                self.get_logger().info(f'Recognized: {char}, Response Time: {response_time:.6f} seconds')
+                self.results.append((char, response_time))
+            else:
+                self.get_logger().info(f'Recognized: {char}, Response Time: None')
 
     def save_results(self, filename):
         with open(filename, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(['Result', 'Latency'])
-            for result, latency in self.results:
-                writer.writerow([result, latency])
-
-
+            writer.writerow(['Character', 'Response Time'])
+            for char, response_time in self.results:
+                writer.writerow([char, response_time])
 
 class MyClient:
     def __init__(self):
@@ -53,8 +50,9 @@ class MyClient:
         self.response_received = False
         self.client.wait_for_service(timeout_sec=1.0)  # Wait for the service to become available
 
-    def send_request(self, result, gesture_received_time):
+    def send_request(self, char):
         attempts = 0
+        gesture_received_time = time.time()
         while True:
             # Reset the flag to receive new requests
             self.response_received = False
@@ -66,11 +64,9 @@ class MyClient:
             client = node.create_client(CustomService, 'custom_service')
             client.wait_for_service(timeout_sec=1.0)  # Wait for the service to become available
 
-            # Create the request and set the result
+            # Create the request and set the character
             request = CustomService.Request()
-            request.request_data = result
-
-            start_time = time.time()
+            request.request_data = char
 
             # Call the service
             future = client.call_async(request)
@@ -83,9 +79,9 @@ class MyClient:
                 response = future.result()
                 self.node.get_logger().info('Received response: %s' % response.response_data)
                 self.response_received = True
-                # Calculate and store the latency
-                latency = end_time - gesture_received_time
-                return latency
+                # Calculate and store the response time
+                response_time = end_time - gesture_received_time
+                return response_time
                 
             # Destroy the Node object
             node.destroy_node()
@@ -95,10 +91,7 @@ class MyClient:
             if attempts >= 10:
                 break
 
-            # # Sleep for some time before sending the next request
-            # time.sleep(0.1)
-
-        # Return None if gesture recognition failed
+        # Return None if the request failed
         return None
 
     def destroy(self):

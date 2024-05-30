@@ -792,6 +792,8 @@ class RH8DHWNode(Node):
         self.dxl_write_ID_pos_speed.clear()
         self.dxl_write_val_pos_speed.clear()
 
+        target_speed = 0  # Initialize target_speed with a default value
+
         for joint in msg.joints:
             id_ = self.getIDfromName(joint.name)
             if id_ != 'None':
